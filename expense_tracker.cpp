@@ -1,19 +1,3 @@
-/*
- * Personal Expense Tracker  -  OOPS (C++) PBL / Mini Project
- * Name : Mayan Pathania
- * UID  : 25BCD10212
- * Course     : BCA - 2nd Year (Object Oriented Programming using C++)
- * University : Chandigarh University
- *
- * *** UNIQUE FEATURE (by Mayan Pathania): "Smart Insights + Signed Report" ***
- *   - Spending-personality analysis, month-end projection, daily savings challenge
- *   - Exported report carrying a unique Project Signature (hash of UID + data)
- *
- * OOP concepts used: classes & objects, encapsulation, inheritance,
- * polymorphism (virtual functions), abstraction, operator overloading,
- * static members, exception handling, STL containers, smart pointers,
- * file handling.
- */
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -28,14 +12,11 @@
 #include <limits>
 #include <cstdint>
 using namespace std;
-
-/* ------------------------------------------------------------------ */
-/*  Class Date : validated calendar date                               */
-/* ------------------------------------------------------------------ */
+ 
 class Date {
     int day, month, year;
 public:
-    Date() {                                   // defaults to today
+    Date() {                                   
         time_t t = time(nullptr);
         tm* lt = localtime(&t);
         day = lt->tm_mday; month = lt->tm_mon + 1; year = lt->tm_year + 1900;
@@ -57,8 +38,8 @@ public:
     int getDay() const   { return day; }
     int getMonth() const { return month; }
     int getYear() const  { return year; }
-
-    bool operator<(const Date& o) const {      // operator overloading
+ 
+    bool operator<(const Date& o) const {      
         if (year != o.year) return year < o.year;
         if (month != o.month) return month < o.month;
         return day < o.day;
@@ -70,12 +51,9 @@ public:
     }
     friend ostream& operator<<(ostream& os, const Date& d) { return os << d.toString(); }
 };
-
-/* ------------------------------------------------------------------ */
-/*  Class Expense : base class for every expense record                */
-/* ------------------------------------------------------------------ */
+ 
 class Expense {
-    static int nextId;                         // static data member
+    static int nextId;                         
 protected:
     int id;
     double amount;
@@ -89,10 +67,10 @@ public:
         else id = nextId++;
     }
     virtual ~Expense() {}
-
+ 
     virtual string type() const { return "ONE"; }
     virtual string extra() const { return "-"; }
-    virtual void display() const {             // polymorphic behaviour
+    virtual void display() const {             
         cout << left << setw(5) << id << setw(13) << date << setw(14) << category
              << right << setw(10) << fixed << setprecision(2) << amount << "  "
              << left << setw(22) << description << setw(10) << "One-time" << "\n";
@@ -104,22 +82,19 @@ public:
           << "|" << extra();
         return o.str();
     }
-
+ 
     int getId() const { return id; }
     double getAmount() const { return amount; }
     const string& getCategory() const { return category; }
     const Date& getDate() const { return date; }
-
+ 
     bool operator<(const Expense& o) const { return amount < o.amount; }
     static void resetCounter() { nextId = 1; }
 };
 int Expense::nextId = 1;
-
-/* ------------------------------------------------------------------ */
-/*  Class RecurringExpense : derived (inheritance)                     */
-/* ------------------------------------------------------------------ */
+ 
 class RecurringExpense : public Expense {
-    string frequency;                          // Weekly / Monthly / Yearly
+    string frequency;                          
 public:
     RecurringExpense(double amt, const string& cat, const string& desc, const Date& dt,
                      const string& freq, int fixedId = 0)
@@ -132,10 +107,7 @@ public:
              << left << setw(22) << description << setw(10) << frequency << "\n";
     }
 };
-
-/* ------------------------------------------------------------------ */
-/*  Class Budget : monthly spending limit                              */
-/* ------------------------------------------------------------------ */
+ 
 class Budget {
     double limit;
 public:
@@ -163,19 +135,14 @@ public:
         else                      cout << "  You are within your budget.\n";
     }
 };
-
-/* ------------------------------------------------------------------ */
-/*  *** UNIQUE FEATURE ***  Class ProjectSignature                      */
-/*  Brands the project as Mayan Pathania's and creates a verification  */
-/*  code (FNV-1a hash of UID + report text) for every exported report. */
-/* ------------------------------------------------------------------ */
+ 
 class ProjectSignature {
 public:
     static string owner()  { return "Mayan Pathania"; }
     static string uid()    { return "25BCD10212"; }
     static string course() { return "BCA - 2nd Year"; }
     static string university() { return "Chandigarh University"; }
-
+ 
     static string stamp(const string& content) {
         uint32_t h = 2166136261u;                        // FNV-1a hash
         for (unsigned char c : uid() + content) { h ^= c; h *= 16777619u; }
@@ -185,25 +152,21 @@ public:
     }
     static string banner() {
         ostringstream o;
-        o << "+------------------------------------------------------------+\n"
-          << "|     PERSONAL EXPENSE TRACKER  -  Smart Edition             |\n"
-          << "|     Developed by : " << left << setw(40) << owner()      << "|\n"
-          << "|     UID          : " << setw(40) << uid()                << "|\n"
-          << "|     Course       : " << setw(40) << course() + " (OOPS - C++)" << "|\n"
-          << "|     University   : " << setw(40) << university()         << "|\n"
+        o           << "PERSONAL EXPENSE TRACKER  -  Smart Edition\n"
+          << "Developed by : " << left << setw(40) << owner()      << "\n"
+          << "UID          : " << setw(40) << uid()                << "\n"
+          << "Course       : " << setw(40) << course() + " (OOPS - C++)" << "\n"
+          << "University   : " << setw(40) << university()         << "\n"
           << "+------------------------------------------------------------+\n";
         return o.str();
     }
 };
-
-/* ------------------------------------------------------------------ */
-/*  Class ExpenseTracker : manages everything                          */
-/* ------------------------------------------------------------------ */
+ 
 class ExpenseTracker {
     vector<unique_ptr<Expense>> expenses;
     Budget budget;
     string fileName;
-
+ 
     static void header() {
         cout << left << setw(5) << "ID" << setw(13) << "Date" << setw(14) << "Category"
              << right << setw(10) << "Amount" << "  " << left << setw(22) << "Description"
@@ -212,9 +175,9 @@ class ExpenseTracker {
     static string lower(string s) { for (char& c : s) c = tolower(c); return s; }
 public:
     explicit ExpenseTracker(const string& f) : fileName(f) {}
-
+ 
     void add(unique_ptr<Expense> e) { expenses.push_back(move(e)); }
-
+ 
     void viewAll() const {
         if (expenses.empty()) { cout << "No expenses recorded yet.\n"; return; }
         header();
@@ -222,7 +185,7 @@ public:
         double total = 0; for (const auto& e : expenses) total += e->getAmount();
         cout << string(76, '-') << "\nTotal: Rs " << fixed << setprecision(2) << total << "\n";
     }
-
+ 
     bool remove(int id) {
         auto it = find_if(expenses.begin(), expenses.end(),
                           [id](const unique_ptr<Expense>& e) { return e->getId() == id; });
@@ -230,7 +193,7 @@ public:
         expenses.erase(it);
         return true;
     }
-
+ 
     void searchByCategory(const string& cat) const {
         bool found = false; double sum = 0;
         for (const auto& e : expenses)
@@ -241,7 +204,7 @@ public:
         if (!found) cout << "No expenses found in category '" << cat << "'.\n";
         else cout << string(76, '-') << "\nCategory total: Rs " << fixed << setprecision(2) << sum << "\n";
     }
-
+ 
     void monthlySummary(int m, int y) const {
         map<string, double> byCat; double total = 0; int count = 0;
         for (const auto& e : expenses)
@@ -249,7 +212,7 @@ public:
                 byCat[e->getCategory()] += e->getAmount();
                 total += e->getAmount(); ++count;
             }
-        cout << "\n--- Summary for " << setfill('0') << setw(2) << m << "/" << y << setfill(' ') << " ---\n";
+        cout << "\n--- Summary for " << setfill('0') << setw(2) << m << "/" << y << setfill(' ') << " \n";
         if (count == 0) { cout << "No expenses in this month.\n"; return; }
         for (const auto& p : byCat) {
             double pct = p.second / total * 100.0;
@@ -259,17 +222,18 @@ public:
         cout << "Transactions: " << count << "\nTotal spent : Rs " << fixed << setprecision(2) << total << "\n";
         budget.check(total);
     }
-
+ 
     void sortByDate()   { sort(expenses.begin(), expenses.end(),
                                [](const unique_ptr<Expense>& a, const unique_ptr<Expense>& b)
                                { return a->getDate() < b->getDate(); }); }
     void sortByAmount() { sort(expenses.begin(), expenses.end(),
                                [](const unique_ptr<Expense>& a, const unique_ptr<Expense>& b)
                                { return *b < *a; }); }   // highest first
-
+ 
     void setBudget(double l) { budget.setLimit(l); }
+ 
+    /* ===== *** UNIQUE FEATURE*** ===== */
 
-    /* ===== *** UNIQUE FEATURE: Smart Insights (Mayan Pathania) *** ===== */
     string buildInsights(int m, int y) const {
         map<string, double> byCat; double total = 0; int count = 0;
         for (const auto& e : expenses)
@@ -278,11 +242,11 @@ public:
             }
         ostringstream o;
         if (count == 0) { o << "No expenses in this month, so no insights yet.\n"; return o.str(); }
-
+ 
         string topCat; double topAmt = 0;
         for (const auto& p : byCat) if (p.second > topAmt) { topAmt = p.second; topCat = p.first; }
         double share = topAmt / total * 100.0;
-
+ 
         string personality, tip, key = lower(topCat);
         if (share < 45)                 { personality = "The Balanced Spender";
                                           tip = "Great spread across categories. Keep tracking to hold this balance."; }
@@ -297,13 +261,13 @@ public:
                                           tip = "Use a 24-hour wait rule before non-essential purchases."; }
         else                            { personality = "The Specialist (" + topCat + ")";
                                           tip = "One category dominates; check if it can be trimmed."; }
-
+ 
         int dim = Date::daysInMonth(m, y);
         Date today; bool current = (today.getMonth() == m && today.getYear() == y);
         int elapsed = current ? today.getDay() : dim;
         double daily = total / elapsed;
         double projected = current ? daily * dim : total;
-
+ 
         o << fixed << setprecision(2)
           << "Spending personality : " << personality << "\n"
           << "Top category         : " << topCat << " (" << setprecision(1) << share << "% of spending)\n"
@@ -341,18 +305,18 @@ public:
             << "(Unique code generated from the owner's UID and this report's data)\n";
         cout << "Signed report saved as " << fname << "\n";
     }
-    /* ================================================================= */
-
+    
+ 
     void save() const {
         ofstream out(fileName);
         if (!out) throw runtime_error("Could not open file for saving.");
         out << "BUDGET|" << budget.getLimit() << "\n";
         for (const auto& e : expenses) out << e->toFileString() << "\n";
     }
-
+ 
     void load() {
         ifstream in(fileName);
-        if (!in) return;                       // first run: no file yet
+        if (!in) return;                       
         string line; int loaded = 0;
         while (getline(in, line)) {
             if (line.empty()) continue;
@@ -371,10 +335,7 @@ public:
         cout << "Loaded " << loaded << " record(s) from " << fileName << ".\n";
     }
 };
-
-/* ------------------------------------------------------------------ */
-/*  Input helpers                                                      */
-/* ------------------------------------------------------------------ */
+ 
 string readLine(const string& prompt) {
     string s;
     do {
@@ -431,19 +392,19 @@ string readFrequency() {
     }
 }
 void menu() {
-    cout << "\n======== PERSONAL EXPENSE TRACKER ========\n"
+    cout << "\n PERSONAL EXPENSE TRACKER \n"
          << " 1. Add expense\n 2. Add recurring expense\n 3. View all expenses\n"
          << " 4. Delete expense by ID\n 5. Search by category\n 6. Monthly summary\n"
          << " 7. Set monthly budget\n 8. Sort by date\n 9. Sort by amount (high to low)\n"
          << "10. * Smart Insights (unique feature)\n11. * Export Signed Report (unique feature)\n"
-         << " 0. Save and exit\n==========================================\n";
+         << " 0. Save and exit\n";
 }
-
+ 
 int main() {
     ExpenseTracker tracker("expenses.txt");
     cout << ProjectSignature::banner();
     tracker.load();
-
+ 
     while (true) {
         menu();
         int choice = readInt("Enter choice: ");
@@ -492,3 +453,4 @@ int main() {
         }
     }
 }
+ 
